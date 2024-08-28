@@ -161,3 +161,25 @@ group by 1
 ;
 
 --10
+with dates_cte as (
+	select 
+  		customer_id,
+  		join_date,
+  		join_date + 7 as end_date
+	from dannys_diner.members  	
+)
+
+select 
+	dates_cte.customer_id,
+	sum (case
+		when dannys_diner.sales.product_id=1 then dannys_diner.menu.price * 20
+        when dannys_diner.sales.order_date < dates_cte.end_date then dannys_diner.menu.price * 20
+         else dannys_diner.menu.price * 10
+         end) as points
+from dannys_diner.sales 
+join dates_cte on dannys_diner.sales.customer_id = dates_cte.customer_id
+join dannys_diner.menu on dannys_diner.sales.product_id = dannys_diner.menu.product_id
+where dannys_diner.sales.order_date >= dates_cte.join_date
+and dannys_diner.sales.order_date <= '01-31-2021'
+group by 1
+order by 1
