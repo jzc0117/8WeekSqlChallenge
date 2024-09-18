@@ -185,43 +185,4 @@ group by 1
 order by 1
 ;
 
--- 4.How many of each type of pizza was delivered?
-with cte as (
-select
-  order_id,
-  runner_id,
-  pickup_time, 
-  distance, 
-  duration,
-  case when cancellation = 'Restaurant Cancellation' then 'Restaurant Cancellation'
-  		when cancellation='Customer Cancellation' then 'Customer Cancellation'
-  		else Null
-  end as cancellation_cleaned
-from pizza_runner.runner_orders
-),
 
-orders_cte as (
-	select 
-  		order_id,
-  		customer_id,
-  		pizza_id,
-  	case when exclusions='null' then Null
-  		when exclusions='' then Null
-  		else exclusions
-  	end as extras_cleaned,
-    	case when extras='null' then Null
-  		when extras='' then Null
-  		else extras
-  	end as extras_cleaned,
-  	order_time
-  	from pizza_runner.customer_orders
-)
-select 
-o.pizza_id,names.pizza_name,
-count(cte.order_id)
-from cte
-join orders_cte as o on o.order_id = cte.order_id
-join pizza_runner.pizza_names as names on o.pizza_id=names.pizza_id
-where cancellation_cleaned is null
-group by o.pizza_id,names.pizza_name
-;
