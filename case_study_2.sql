@@ -118,3 +118,86 @@ order by no_of_pizzas desc
 select * from cte
 fetch first 1 rows only
 ;
+
+--7. For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
+with orders_cte as (
+	select 
+  		order_id,
+  		customer_id,
+  		pizza_id,
+  	case when exclusions='null' then Null
+  		when exclusions='' then Null
+  		else exclusions
+  	end as exclusions_cleaned,
+    	case when extras='null' then Null
+  		when extras='' then Null
+  		else extras
+  	end as extras_cleaned,
+  	order_time
+  	from pizza_runner.customer_orders
+),
+runners_orders_cte as (
+  select 
+    order_id,
+    runner_id,
+    pickup_time, 
+    distance, 
+    duration,
+  	case when cancellation = 'Restaurant Cancellation' then 'Restaurant Cancellation'
+  		when cancellation='Customer Cancellation' then 'Customer Cancellation'
+  		else Null
+  	end as cancellation_cleaned
+  from pizza_runner.runner_orders
+)
+select 
+    orders_cte.customer_id,
+    sum(case when orders_cte.exclusions_cleaned is not null or orders_cte.extras_cleaned is not null then 1 
+        else 0 
+        end) as pizza_changes,
+    sum(case when orders_cte.exclusions_cleaned is null and orders_cte.extras_cleaned is null then 1 
+        else 0 end) as no_changes
+from orders_cte
+join runners_orders_cte as runners on runners.order_id=orders_cte.order_id
+where cancellation_cleaned is null
+group by customer_id
+;
+
+-- 8. How many pizzas were delivered that had both exclusions and extras?
+with orders_cte as (
+	select 
+  		order_id,
+  		customer_id,
+  		pizza_id,
+  	case when exclusions='null' then Null
+  		when exclusions='' then Null
+  		else exclusions
+  	end as exclusions_cleaned,
+    	case when extras='null' then Null
+  		when extras='' then Null
+  		else extras
+  	end as extras_cleaned,
+  	order_time
+  	from pizza_runner.customer_orders
+),
+runners_orders_cte as (
+  select 
+    order_id,
+    runner_id,
+    pickup_time, 
+    distance, 
+    duration,
+  	case when cancellation = 'Restaurant Cancellation' then 'Restaurant Cancellation'
+  		when cancellation='Customer Cancellation' then 'Customer Cancellation'
+  		else Null
+  	end as cancellation_cleaned
+  from pizza_runner.runner_orders
+)
+select 
+    orders_cte.customer_id,
+    sum(case when orders_cte.exclusions_cleaned is not null and orders_cte.extras_cleaned is not null then 1 
+        else 0 
+        end) as exclusions_and_extras
+from orders_cte
+join runners_orders_cte as runners on runners.order_id=orders_cte.order_id
+where cancellation_cleaned is null
+group by customer_id
