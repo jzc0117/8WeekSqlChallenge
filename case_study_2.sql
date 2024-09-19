@@ -201,3 +201,22 @@ from orders_cte
 join runners_orders_cte as runners on runners.order_id=orders_cte.order_id
 where cancellation_cleaned is null
 group by customer_id
+;
+
+-- 9. What was the total volume of pizzas ordered for each hour of the day?
+select 
+	date_part('hour', order_time) as hour,
+	count(order_id) as pizza_orders
+from pizza_runner.customer_orders
+group by date_part('hour', order_time) 
+order by 1
+;
+
+-- 10. What was the volume of orders for each day of the week?
+select 
+	extract(dow from order_time) as day,
+	count(order_id) as pizza_orders
+from pizza_runner.customer_orders
+group by extract(dow from order_time)
+order by 1
+;
