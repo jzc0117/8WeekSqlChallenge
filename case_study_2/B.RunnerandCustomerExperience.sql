@@ -98,3 +98,15 @@ select
 from duration_cte
 ;
 
+-- What was the average speed for each runner for each delivery and do you notice any trend for these values?
+select 
+	order_id,
+    runner_id,
+    NULLIF(regexp_replace(runner_orders.distance, '[^\d.]','','g'), '')::numeric as distance,
+    NULLIF(regexp_replace(runner_orders.duration, '\D','','g'), '')::numeric as duration,
+    (NULLIF(regexp_replace(runner_orders.distance, '[^\d.]','','g'), '')::numeric/
+    NULLIF(regexp_replace(runner_orders.duration, '\D','','g'), '')::numeric) as speed_km_per_min
+from pizza_runner.runner_orders
+
+
+
