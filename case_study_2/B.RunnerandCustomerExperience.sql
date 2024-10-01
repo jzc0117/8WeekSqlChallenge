@@ -76,3 +76,25 @@ with distance_cte as (
 	avg(distance_cleaned)
  from distance_cte
  group by customer_id
+;
+
+-- What was the difference between the longest and shortest delivery times for all orders?
+with duration_cte as (
+  select
+      runner_orders.order_id, 
+  	  orders.customer_id,
+      runner_orders.runner_id,
+      runner_orders.pickup_time,
+      NULLIF(regexp_replace(runner_orders.duration, '\D','','g'), '')::numeric AS duration_cleaned
+	from pizza_runner.runner_orders as runner_orders
+  	join pizza_runner.customer_orders as orders on runner_orders.order_id = orders.order_id
+	where distance is not null and distance !='null'
+  	order by runner_orders.order_id
+  )
+select 
+	max(duration_cleaned),
+    min(duration_cleaned),
+	(max(duration_cleaned)-min(duration_cleaned)) as difference
+from duration_cte
+;
+
