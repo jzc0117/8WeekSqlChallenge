@@ -27,3 +27,32 @@ select
 from cte
 group by runner_id
 order by runner_id
+;
+
+-- Is there any relationship between the number of pizzas and how long the order takes to prepare?
+-- Based on the query below, there is a positive relationship between the number of pizzas and the time it takes to prepare the order.  
+
+with cte as (
+  select 
+      orders.order_id as order_id,
+      runner_orders.runner_id as runner_id,
+      orders.order_time as order_time,
+  	  orders.pizza_id as pizza_id,
+      pg_typeof(orders.order_time),
+      case when runner_orders.pickup_time='null' then null 
+          else cast(runner_orders.pickup_time as timestamp)  
+          end as pickup_timestamp
+  from pizza_runner.runner_orders as runner_orders
+  join pizza_runner.customer_orders as orders on runner_orders.order_id = orders.order_id
+)
+
+select 
+	order_id,
+	count(pizza_id),
+	extract(minutes from (pickup_timestamp - order_time))
+    
+from cte
+where pickup_timestamp is not null
+group by 1,3
+order by order_id
+;
