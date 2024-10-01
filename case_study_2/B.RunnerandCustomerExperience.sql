@@ -107,6 +107,32 @@ select
     (NULLIF(regexp_replace(runner_orders.distance, '[^\d.]','','g'), '')::numeric/
     NULLIF(regexp_replace(runner_orders.duration, '\D','','g'), '')::numeric) as speed_km_per_min
 from pizza_runner.runner_orders
+;
 
-
-
+-- What is the successful delivery percentage for each runner?
+with cte as (
+select
+  order_id,
+  runner_id,
+  pickup_time, 
+  distance, 
+  duration,
+  case when cancellation = 'Restaurant Cancellation' then 'Restaurant Cancellation'
+  		when cancellation='Customer Cancellation' then 'Customer Cancellation'
+  		else Null
+  end as cancellation_cleaned
+from pizza_runner.runner_orders
+)
+select 
+	runner_id,
+   	count(case when cancellation_cleaned is null then 1
+    else null
+    end) as num_delivered,
+     count(*),
+    (count(case when cancellation_cleaned is null then 1
+    else null
+    end)::decimal/
+    count(*)::decimal)*100 as percentage
+from cte
+group by runner_id
+order by runner_id
