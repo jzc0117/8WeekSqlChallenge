@@ -9,7 +9,7 @@ order by 1
 
 -- What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
 with cte as (
-  select 
+  select distinct
       orders.order_id as order_id,
       runner_orders.runner_id as runner_id,
       orders.order_time as order_time,
@@ -56,3 +56,23 @@ where pickup_timestamp is not null
 group by 1,3
 order by order_id
 ;
+
+-- What was the average distance travelled for each customer?
+with distance_cte as (
+  select distinct
+      runner_orders.order_id, 
+  	  orders.customer_id,
+      runner_orders.runner_id,
+      runner_orders.pickup_time,
+      NULLIF(regexp_replace(runner_orders.distance, '[^\d.]','','g'), '')::numeric AS distance_cleaned
+	from pizza_runner.runner_orders as runner_orders
+  	join pizza_runner.customer_orders as orders on runner_orders.order_id = orders.order_id
+	where distance is not null and distance !='null'
+  	order by runner_orders.order_id
+  )
+ 
+ select 
+	customer_id,
+	avg(distance_cleaned)
+ from distance_cte
+ group by customer_id
