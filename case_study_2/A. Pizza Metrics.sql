@@ -58,7 +58,7 @@ orders_cte as (
   	case when exclusions='null' then Null
   		when exclusions='' then Null
   		else exclusions
-  	end as extras_cleaned,
+  	end as exclusions_cleaned,
     	case when extras='null' then Null
   		when extras='' then Null
   		else extras
@@ -85,7 +85,7 @@ with orders_cte as (
   	case when exclusions='null' then Null
   		when exclusions='' then Null
   		else exclusions
-  	end as extras_cleaned,
+  	end as exclusions_cleaned,
     	case when extras='null' then Null
   		when extras='' then Null
   		else extras
