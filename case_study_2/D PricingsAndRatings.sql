@@ -78,6 +78,27 @@ VALUES
   (8, 5, 10, 104, '', '2020-01-11 19:30:00');
 
 
+-- 4. Using your newly generated table - can you join all of the information together to form a table which has the following information for successful deliveries? 
+select 
+  c.customer_id,
+  c.order_id,
+  r.runner_id,
+  reviews.review_rating,
+  c.order_time,
+  r.pickup_time,
+  r.pickup_time::timestamp - c.order_time as time_between_order_and_pickup,
+  r.duration,
+  avg(regexp_replace(r.distance, '[^\d.]','','g')::numeric/regexp_replace(r.duration, '[^\d.]','','g')::numeric) as avg_speed,
+  count(*) as total_pizzas
+from pizza_runner.customer_orders as c
+left join pizza_runner.reviews as reviews on c.order_id= reviews.order_id and reviews.customer_id = c.customer_id
+left join pizza_runner.runner_orders as r on r.order_id=c.order_id
+where cancellation is null 
+  or cancellation = ''
+  or cancellation = 'null'
+group by 1,2,3,4,5,6,7,8
+order by c.order_id
+
 
 -- 5. If a Meat Lovers pizza was $12 and Vegetarian $10 fixed prices with no cost for extras and each runner is 
 -- 	paid $0.30 per kilometre traveled - how much money does Pizza Runner have left over after these deliveries?
