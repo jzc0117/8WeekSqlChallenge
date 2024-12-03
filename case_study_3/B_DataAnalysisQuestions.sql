@@ -111,3 +111,47 @@ select
     round( (cast(trial_churn as numeric)/cast(total_customers as numeric)) * 100 , 2) as "trial_churn_%",
     total_customers
 from count_cte
+;
+
+-- 7. What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
+with cte as (
+select 
+ count(case when plan_id = 0 then 1 
+         else NULL
+         end
+         ) as trial,
+    count(case when plan_id =1 then 1 
+         else NULL
+         end
+         ) as basic_monthly,  
+    count(case when plan_id =2 then 1 
+         else NULL
+         end
+         ) as pro_monthly,  
+    count(case when plan_id =3 then 1 
+         else NULL
+         end
+         ) as pro_annual,
+    count(case when plan_id =4 then 1 
+         else NULL
+         end
+         ) as churn,
+    count(*) as total_customers
+from foodie_fi.subscriptions
+where start_date < '2020-12-31'
+)
+
+select 
+	trial,
+    round(cast(trial as numeric)/cast(total_customers as numeric)*100,2),
+    basic_monthly,
+    round(cast(basic_monthly as numeric)/cast(total_customers as numeric)*100,2),
+	pro_monthly,
+    round(cast(pro_monthly as numeric)/cast(total_customers as numeric)*100,2),
+	pro_annual,
+    round(cast(pro_annual as numeric)/cast(total_customers as numeric)*100,2),
+    churn,
+    round(cast(churn as numeric)/cast(total_customers as numeric)*100,2),
+    total_customers
+from cte
+;
