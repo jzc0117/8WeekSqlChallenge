@@ -39,3 +39,30 @@ select
 	round(((select count(*) from foodie_fi.subscriptions where plan_id = 4)/sum(count(*)) over())*100, 1) as churned_percentage,
 	count(*) as total_customers
 from foodie_fi.subscriptions
+;
+
+-- 5. How many customers have churned straight after their initial free trial - what percentage is this rounded to the nearest whole number?
+
+with cte as (
+  select 
+    customer_id, 
+    plan_id,
+    lead(plan_id) over(order by customer_id) lead_plan_id,
+    start_date
+  from foodie_fi.subscriptions
+  order by customer_id
+)
+
+select
+count(case when plan_id =0 and lead_plan_id = 4 then 1 
+     else NULL
+     end
+     ) as trial_churn,     
+ round(
+ 	(count(
+      case when plan_id =0 and lead_plan_id = 4 then 1 
+	  else NULL
+      end
+    )/sum(count(*)) over()) 
+   		* 100, 0) as trial_churn_percentage
+from cte
