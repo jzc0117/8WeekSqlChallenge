@@ -66,3 +66,48 @@ count(case when plan_id =0 and lead_plan_id = 4 then 1
     )/sum(count(*)) over()) 
    		* 100, 0) as trial_churn_percentage
 from cte
+;
+
+-- 6. What is the number and percentage of customer plans after their initial free trial?
+with cte as (
+  select 
+    customer_id, 
+    plan_id,
+    lead(plan_id) over(order by customer_id) lead_plan_id,
+    start_date
+  from foodie_fi.subscriptions
+  order by customer_id
+),
+
+count_cte as (
+  select
+    count(case when plan_id =0 and lead_plan_id = 4 then 1 
+         else NULL
+         end
+         ) as trial_churn,
+    count(case when plan_id =0 and lead_plan_id = 1 then 1 
+         else NULL
+         end
+         ) as trial_basic_monthly,  
+    count(case when plan_id =0 and lead_plan_id = 2 then 1 
+         else NULL
+         end
+         ) as trial_pro_monthly,  
+    count(case when plan_id =0 and lead_plan_id = 3 then 1 
+         else NULL
+         end
+         ) as trial_pro_annual,
+ 	count(*) as total_customers
+  from cte
+)
+select 
+  trial_basic_monthly,
+  round( (cast(trial_basic_monthly as numeric)/cast(total_customers as numeric)) * 100 , 2) as "trial_basic_monthly_%",
+  trial_pro_monthly,
+    round( (cast(trial_pro_monthly as numeric)/cast(total_customers as numeric)) * 100 , 2) as "trial_pro_monthly_%",
+  trial_pro_annual,
+    round( (cast(trial_pro_annual as numeric)/cast(total_customers as numeric)) * 100 , 2) as "pro_annual_%",
+  trial_churn,
+    round( (cast(trial_churn as numeric)/cast(total_customers as numeric)) * 100 , 2) as "trial_churn_%",
+    total_customers
+from count_cte
